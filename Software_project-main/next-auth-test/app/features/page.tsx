@@ -18,7 +18,7 @@ const Features: React.FC = () => {
 
             <div className="flex flex-wrap justify-center" style={{marginTop:"60px"}}>
                 <div className="flex flex-col items-center justify-center" style={{height:"300px"}}>
-                    <h1 className="text-4xl font-bold text-center text-slate-800 mb-6">"The advancement of route and <br /> schedule optimization"</h1>
+                    <h1 className="text-4xl font-bold text-center text-slate-800 mb-6">&quot;The advancement of route and <br /> schedule optimization&quot;</h1>
                 </div>
                 
                 <div className="flex flex-row">

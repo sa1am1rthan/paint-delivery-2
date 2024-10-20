@@ -10,7 +10,7 @@ const About: React.FC = () => {
           <h3 style={{ opacity: 0.5, marginBottom: '30px' }}>Delivery Route Optimization</h3>
           <p>
             The Route Optimization web application aims to solve the classic Traveling Salesman Problem (TSP) using efficient algorithms and modern web technologies.
-            Whether you're a salesperson, a delivery driver, or a logistics manager, optimizing routes can significantly reduce costs, save time, and improve efficiency.
+            Whether you&apos;re a salesperson, a delivery driver, or a logistics manager, optimizing routes can significantly reduce costs, save time, and improve efficiency.
           </p>
           <img src="Paintdel.jpg" style={{ width: '350px', marginTop: '50px', marginLeft: '220px' }} alt="Delivery" className='about-image'/>
         </div>

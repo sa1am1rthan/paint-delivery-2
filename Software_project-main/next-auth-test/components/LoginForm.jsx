@@ -14,7 +14,7 @@ export default function LoginForm() {
 
     const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {

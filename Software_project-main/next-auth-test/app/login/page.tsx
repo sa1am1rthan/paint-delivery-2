@@ -11,6 +11,7 @@ import {
     Button,
     Typography,
 } from "@material-tailwind/react";
+import Image from 'next/image';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -51,7 +52,12 @@ const LoginForm: React.FC = () => {
     <div className='flex items-center justify-center h-screen'>
       <Card style={{padding:"10px" , width:"400px" }} color="transparent" shadow={true}>
         <div className='flex items-center justify-center'>
-          <img src='logowh.jpg' style={{width:"70px", marginBottom:"5px"}} alt="Logo" />
+          <Image 
+            src='logowh.jpg' 
+            alt="Logo" 
+            width={70} 
+            height={70}
+          />
         </div>
         
         <Typography variant="h3" color="blue-gray" className='flex items-center justify-center mb-8'>
@@ -113,7 +119,7 @@ const LoginForm: React.FC = () => {
             Login
           </Button>
           <Typography color="gray" className="mt-4 text-center font-normal">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="#" onClick={handleSignupClick} className="font-medium text-gray-900">
               Sign Up
             </a>
