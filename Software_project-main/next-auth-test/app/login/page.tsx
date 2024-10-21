@@ -53,7 +53,7 @@ const LoginForm: React.FC = () => {
       <Card style={{padding:"10px" , width:"400px" }} color="transparent" shadow={true}>
         <div className='flex items-center justify-center'>
           <Image 
-            src='logowh.jpg' 
+            src='/logowh.jpg' 
             alt="Logo" 
             width={70} 
             height={70}
