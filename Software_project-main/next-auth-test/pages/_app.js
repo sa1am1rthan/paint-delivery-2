@@ -20,7 +20,7 @@ function MyApp({ Component, pageProps }) {
 
 export default MyApp;
 
-self.addEventListener('fetch', (event) => {
+/*self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(event.request)
         .then((response) => {
@@ -44,4 +44,4 @@ self.addEventListener('fetch', (event) => {
           return caches.match('/offline.html');
         })
     );
-  });
+  });*/
