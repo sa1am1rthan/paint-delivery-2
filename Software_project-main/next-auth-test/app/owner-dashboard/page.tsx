@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import MapComponent from "../mappg/page";
+import OwnerMapComponent from "../../components/OwnerMapComponent";
 
 export default function OwnerDashboard() {
   const { data: session, status } = useSession();
@@ -25,7 +25,7 @@ export default function OwnerDashboard() {
   }
 
   if (session?.user?.role === "owner") {
-    return <MapComponent role={session?.user?.role} state={state}/>;
+    return <OwnerMapComponent role={session?.user?.role} state={state}/>;
   }
 
   return null;

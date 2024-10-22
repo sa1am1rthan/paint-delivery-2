@@ -71,7 +71,7 @@ export default function History() {
             localStorage.setItem('csvData', JSON.stringify(data));
 
             // Route to the mappg page
-            router.push(`/mappg?fileId=${fileId}`);
+            router.push(`/owner-dashboard?fileId=${fileId}`);
         } catch (error) {
             console.error('Error in handleFilenameClick:', error);
         }
