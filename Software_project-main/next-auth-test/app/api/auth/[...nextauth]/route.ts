@@ -1,10 +1,16 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "../../../../models/user";
 import bcrypt from "bcrypt";
+import { Console } from "console";
 
-export const authOptions: AuthOptions = {
+const ownerCredentials = {
+  email: "owner@example.com",
+  password: "ownerpassword123",
+};
+
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -13,6 +19,16 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         const { email, password } = credentials;
         
+        // Check for owner credentials
+        if (email === ownerCredentials.email && password === ownerCredentials.password) {
+          return {
+            id: "owner-id",
+            name: "Owner",
+            email: ownerCredentials.email,
+            role: "owner"
+          };
+        }
+
         try {
           await connectMongoDB();
           const user = await User.findOne({ email });

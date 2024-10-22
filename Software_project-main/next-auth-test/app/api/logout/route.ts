@@ -1,19 +1,33 @@
 import { NextResponse } from 'next/server';
+import { connectMongoDB } from '@/lib/mongodb';
+import User from '@/models/user';
+import bcrypt from 'bcrypt';
 
-export async function GET() {
-  const response = NextResponse.json(
-    { message: 'Logout successful' },
-    { status: 200 }
-  );
+export async function POST(req: Request) {
+  try {
+    const { name, email, password } = await req.json();
+    await connectMongoDB();
 
-  response.cookies.set('token', '', {
-    httpOnly: true,
-    expires: new Date(0),
-    path: '/',
-  });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+    }
 
-  // Redirect to home page
-  response.headers.set('Location', '/');
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  return response;
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: 'pending', // Explicitly set the role to 'pending'
+    });
+
+    await newUser.save();
+
+    return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
+  } catch (error) {
+    console.error('Signup error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

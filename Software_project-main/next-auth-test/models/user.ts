@@ -6,8 +6,8 @@ const userSchema = new Schema({
   password: { type: String, required: true },
   role: {
     type: String,
-    enum: ['admin', 'driver'],
-    default: 'driver',
+    enum: ['admin', 'driver', 'pending'],
+    default: 'pending',
     required: true
   }
 });

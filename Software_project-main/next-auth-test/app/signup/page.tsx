@@ -17,7 +17,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("driver"); // Default role
+  const [role, setRole] = useState("pending"); // Default role
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
 
@@ -33,7 +33,7 @@ export default function SignupPage() {
     setError("");
     setEmailError("");
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password) {
       setError("All fields are necessary.");
       return;
     }
@@ -53,7 +53,7 @@ export default function SignupPage() {
           name,
           email,
           password,
-          role,
+          role: "pending",
         }),
       });
 
@@ -124,13 +124,13 @@ export default function SignupPage() {
               }}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Typography variant="h6" color="blue-gray" className="-mb-3">
+            {/* <Typography variant="h6" color="blue-gray" className="-mb-3">
               Role
-            </Typography>
-            <Select label="Select Role" value={role} onChange={(value) => setRole(value || "driver")}>
+            </Typography> */}
+            {/* <Select label="Select Role" value={role} onChange={(value) => setRole(value || "driver")}>
               <Option value="driver">Driver</Option>
               <Option value="admin">Admin</Option>
-            </Select>
+            </Select> */}
           </div>
           {error && (
             <Typography color="red" className="mt-2 text-center">

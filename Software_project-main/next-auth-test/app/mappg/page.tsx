@@ -25,18 +25,22 @@ const center = {
 
 // Set constant origin and destination address
 const ORIGIN_DESTINATION_ADDRESS = "357 Negombo - Colombo Main Rd, Negombo 11500";
+const state = "admin";
 
 interface RouteData {
   deliveryDate: string;
   location: string;
 }
 
-const MapComponent: React.FC = () => {
+// Define the loader options outside of the component
+const loaderOptions = {
+  googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+  libraries: ["places", "maps"],
+};
+
+const MapComponent: React.FC = (role, state) => {
   console.log("MapComponent rendered");
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: ["places"],
-  });
+  const { isLoaded } = useJsApiLoader(loaderOptions);
 
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [tableData, setTableData] = useState<RouteData[]>([]);
@@ -372,12 +376,12 @@ const MapComponent: React.FC = () => {
               )}
             </IconButton>
             <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-              <Sidebar handleLogout={handleLogout} handleAddCsvClick={handleAddCsvClick} />
+              <Sidebar handleLogout={handleLogout} handleAddCsvClick={handleAddCsvClick} role={role} state={state} />
             </Drawer>
           </div>
         ) : (
           <div className="flex-shrink-0">
-            <Sidebar handleLogout={handleLogout} handleAddCsvClick={handleAddCsvClick} />
+            <Sidebar handleLogout={handleLogout} handleAddCsvClick={handleAddCsvClick} role={role} state={state} />
           </div>
         )}
         <div className="flex-grow p-4 overflow-y-auto">
