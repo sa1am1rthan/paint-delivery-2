@@ -1,6 +1,7 @@
 'use client';
 
 import React from "react";
+import Image from 'next/image';
 import Header from "../Header";
 import { useRouter } from "next/navigation";
 import Footer from "../Footer";
@@ -13,46 +14,43 @@ const Support: React.FC = () => {
     };
 
     return (
-        <>
+        <div className="flex flex-col min-h-screen">
             <Header onLoginClick={handleLoginClick} />
-
-            <div className="flex flex-wrap justify-center" style={{marginTop:"60px"}}>
-                <div className="flex flex-col items-center justify-center" style={{height:"200px"}}>
-                    <h1 className="text-4xl font-bold text-center text-slate-800 mb-6" style={{color: "#4592A5"}}>For any tech support and paint orders,<br /> contact us and we'll be thrilled to assist you.</h1>
+            <main className="flex-grow container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold mb-6">Support</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
+                        <p className="mb-4">
+                            If you need assistance, please don&apos;t hesitate to reach out to our support team.
+                        </p>
+                        <ul className="list-disc list-inside">
+                            <li>Email: support@paintroutex.com</li>
+                            <li>Phone: +1 (123) 456-7890</li>
+                            <li>Hours: Monday - Friday, 9am - 5pm EST</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-4">FAQs</h2>
+                        <ul className="list-disc list-inside">
+                            <li>How do I reset my password?</li>
+                            <li>Can I change my subscription plan?</li>
+                            <li>How do I update my billing information?</li>
+                        </ul>
+                    </div>
                 </div>
-                
-                <div className="flex flex-row" >
-                <div class="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96" style={{backgroundColor:"#D8E1E0", margin:"10px"}}>
-            <div class="relative p-2.5 h-96 overflow-hidden rounded-xl bg-clip-border flex items-center justify-center">
-                <img
-                    style={{width:"200px", height:"200px", objectFit:"contain"}}
-                    src="Bandula.png" 
-                    alt="card-image"
-                    class="rounded-md"
-                    style={{height:"500px"}}
-                />
-            </div>                                                             
-            <div class="p-4 flex flex-col">
-                <div class="mb-4 text-center">
-                    <p class="text-slate-800 text-xl font-semibold mb-2">
-                    Bandula Paint Center
-                    </p>
-                    <p class="text-cyan-600 text-xl font-semibold mb-4">
-                    Address:Bandula Paint Center, Colombo Road, Negombo
-                    </p>
+                <div className="mt-8">
+                    <Image
+                        src="/support-image.jpg"
+                        alt="Support Team"
+                        width={600}
+                        height={400}
+                        className="rounded-lg shadow-md"
+                    />
                 </div>
-                <a class="text-slate-600 leading-normal font-light text-center" href="support@paintroutex.com">
-                Email: support@paintroutex.com
-                </a>
-                <p class="text-slate-600 leading-normal font-light text-center">
-                Contact No: 0777445448
-                </p>                                                
-            </div>
+            </main>
+            <Footer />
         </div>
-                </div>
-            </div>
-            <Footer/>
-        </>
     );
 }
 
