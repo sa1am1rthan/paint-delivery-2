@@ -24,6 +24,16 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout, handleAddCsvClick, role
     router.push('/history');
   };
 
+  const handleDriverHistoryClick = () => {
+    router.push('/driver-history');
+  };
+
+  const handleOwnerHistoryClick = () => {
+    router.push('/owner-history');
+  };
+
+
+
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
@@ -67,12 +77,45 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout, handleAddCsvClick, role
             Upload CSV
           </ListItem>
         )}
-        <ListItem onClick={handleHistoryClick}>
+        {/* <ListItem onClick={handleHistoryClick}>
+          <ListItemPrefix>
+            <ClockIcon className="h-5 w-5" />
+          </ListItemPrefix>
+          History
+        </ListItem> */}
+        {role && role.role !== "owner" && role && role.role !== "driver" && role && role.role !== "admin" &&(
+          <ListItem onClick={handleHistoryClick}>
           <ListItemPrefix>
             <ClockIcon className="h-5 w-5" />
           </ListItemPrefix>
           History
         </ListItem>
+        )}
+        {role && role.role === "owner" && (
+          <ListItem onClick={handleOwnerHistoryClick}>
+          <ListItemPrefix>
+            <ClockIcon className="h-5 w-5" />
+          </ListItemPrefix>
+          History
+        </ListItem>
+        )}
+        {role && role.role === "driver" && (
+          <ListItem onClick={handleDriverHistoryClick}>
+          <ListItemPrefix>
+            <ClockIcon className="h-5 w-5" />
+          </ListItemPrefix>
+          History
+        </ListItem>
+        )}
+        {role && role.role === "admin" && (
+          <ListItem onClick={handleHistoryClick}>
+          <ListItemPrefix>
+            <ClockIcon className="h-5 w-5" />
+          </ListItemPrefix>
+          History
+        </ListItem>
+        )}
+
         {role && role.role === "owner" && (
           <ListItem onClick={handleManageUsersClick}>
             <ListItemPrefix>
