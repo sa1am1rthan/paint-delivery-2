@@ -3,6 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import LoggedHeader from "../LoggedHeader";
+import Footer from "../Footer";
 
 interface User {
   _id: string;
@@ -66,13 +68,19 @@ export default function UsersList() {
     router.push('/owner-dashboard');
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/logout');
+    router.push('/');
+  };
+
   if (status === "loading") {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-grow container mx-auto p-4">
+      <LoggedHeader handleLogout={handleLogout} />
+      <main className="flex-grow container mx-auto p-4" style={{ marginTop: "70px" }}>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Users List</h1>
           <button
@@ -115,6 +123,7 @@ export default function UsersList() {
           </table>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
