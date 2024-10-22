@@ -29,6 +29,11 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
     router.push('/products');
   };
 
+  const handleSupportClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push('/support');
+  };
+
   return (
     <header>
       <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
@@ -42,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
         <a href="/" onClick={handleHomeClick}>Home</a>
         <a href="/features" onClick={handleFeaturesClick}>Features</a>
         <a href="/products" onClick={handleProductsClick}>Products</a>
-        <a href="#">Support</a>
+        <a href="/support" onClick={handleSupportClick}>Support</a>
         <button className="btnLogin-popup" onClick={onLoginClick}>
           Login
         </button>

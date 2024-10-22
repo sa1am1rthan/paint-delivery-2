@@ -99,12 +99,17 @@ export default function History() {
             <LoggedHeader />
             <div className="min-h-[calc(100vh-140px)] p-4" style={{marginTop:"70px"}}>
                 <div className="mb-4">
-                    <Button
+                <Button
                         color="blue"
                         className="px-4 py-2 text-sm font-bold text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors duration-300 shadow-md"
                         onClick={handleBackClick}
                     >
-                        Back
+                        <div style={{display:"flex"}}>
+                        <svg style={{width:"20px", marginRight:"10px"}} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z" />
+                        </svg>
+                        <div>Back</div>
+                        </div>
                     </Button>
                 </div>
                 <Card className="h-full w-full overflow-scroll">

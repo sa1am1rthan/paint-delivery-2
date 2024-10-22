@@ -30,6 +30,12 @@ const LoggedHeader: React.FC<LoggedHeaderProps> = ({ handleLogout }) => {
     router.push('/products');
   };
 
+  const handleSupportClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push('/support');
+  };
+
+
   return (
     <header>
       <div style={{display:"flex", gap:"10px", alignItems:"center"}}>
@@ -43,7 +49,7 @@ const LoggedHeader: React.FC<LoggedHeaderProps> = ({ handleLogout }) => {
         <a href="/" onClick={handleHomeClick}>Home</a>
         <a href="/features" onClick={handleFeaturesClick}>Features</a>
         <a href="/products" onClick={handleProductsClick}>Products</a>
-        <a href="#">Support</a>
+        <a href="/support" onClick={handleSupportClick}>Support</a>
         <Avatar 
           src="https://docs.material-tailwind.com/img/face-2.jpg" 
           alt="avatar" 
