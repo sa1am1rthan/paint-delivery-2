@@ -26,6 +26,8 @@ export default function OwnerDashboard() {
 
   if (session?.user?.role === "owner") {
     return <OwnerMapComponent role={session?.user?.role} state={state}/>;
+  }else{
+    router.push("/login");
   }
 
   return null;

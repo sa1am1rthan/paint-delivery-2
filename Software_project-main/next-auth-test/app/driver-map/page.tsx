@@ -27,6 +27,8 @@ export default function DriverDashboard() {
 
   if (session?.user?.role === "driver") {
       return <DriverMapComponent role={session?.user?.role} state={state}/>;
+  }else{
+    router.push("/login");
   }
 
   return null;

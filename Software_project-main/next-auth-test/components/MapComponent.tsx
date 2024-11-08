@@ -668,7 +668,7 @@ const MapComponent: React.FC = (role, state) => {
           )} */}
         </div>
       </div>
-      <Footer handleHomeClick={() => router.push('/')} />
+      <Footer handleHomeClick={() => router.push('/home')} />
     </>
   );
 };

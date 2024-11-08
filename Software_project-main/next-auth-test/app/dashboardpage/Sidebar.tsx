@@ -32,6 +32,10 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout, handleAddCsvClick, role
     router.push('/owner-history');
   };
 
+  const handleAddWaypointClick = () => {
+    router.push('/add-waypoints');
+  };
+
 
 
   const triggerFileInput = () => {
@@ -69,14 +73,14 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout, handleAddCsvClick, role
         </Typography>
       </div>
       <List>
-      {/* {(((role && role.role) !== 'driver') || (state !== 'driver')) && 
-        (<ListItem onClick={handleAddCsvClick}>
+      {(role && role.role) !== 'driver' &&  (role && role.role) !== 'owner' &&
+        (<ListItem onClick={handleAddWaypointClick}>
             <ListItemPrefix>
               <DocumentPlusIcon className="h-5 w-5" />
             </ListItemPrefix>
-            Upload CSV
+            Add Delivery Details
           </ListItem>
-        )} */}
+        )}
         {/* <ListItem onClick={handleHistoryClick}>
           <ListItemPrefix>
             <ClockIcon className="h-5 w-5" />
