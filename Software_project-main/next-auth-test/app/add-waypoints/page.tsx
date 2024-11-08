@@ -216,8 +216,8 @@ const AddWaypoints: React.FC = () => {
 
           {/* Map Section */}
           <div className="space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-grow">
+            <div className="flex gap-4 mb-4">
+              <div className="flex-grow" style={{ width: "90%" }}>
                 <Autocomplete
                   onLoad={setSearchBox}
                   onPlaceChanged={onPlaceSelected}
@@ -226,31 +226,23 @@ const AddWaypoints: React.FC = () => {
                     type="text"
                     placeholder="Search for a location..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ minWidth: "400px" }}
                   />
                 </Autocomplete>
               </div>
-              <button
-                onClick={handleUploadMarker}
-                disabled={!marker || !formData.name || !formData.address || !formData.city || !formData.orderNumber || !formData.contactNumber}
-                className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
-                  marker && formData.name && formData.address && formData.city && formData.orderNumber && formData.contactNumber
-                    ? 'bg-green-500 hover:bg-green-700 text-white cursor-pointer'
-                    : 'bg-green-200 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Upload Data
-              </button>
-              <button
-                onClick={handleRemoveMarker}
-                disabled={!marker}
-                className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
-                  marker 
-                    ? 'bg-red-500 hover:bg-red-700 text-white cursor-pointer'
-                    : 'bg-red-200 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Remove Marker
-              </button>
+              <div className="flex-shrink-0">
+                <button
+                  onClick={handleRemoveMarker}
+                  disabled={!marker}
+                  className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
+                    marker 
+                      ? 'bg-red-500 hover:bg-red-700 text-white cursor-pointer'
+                      : 'bg-red-200 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Remove Marker
+                </button>
+              </div>
             </div>
             <GoogleMap
               center={center}
@@ -266,6 +258,15 @@ const AddWaypoints: React.FC = () => {
             >
               {marker && <Marker position={marker} />}
             </GoogleMap>
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={handleUploadMarker}
+                disabled={!marker || !formData.name || !formData.address || !formData.city || !formData.orderNumber || !formData.contactNumber}
+                className="mt-4 flex items-center gap-2 px-6 py-3 font-sans text-xs font-bold text-center text-white uppercase align-middle transition-all rounded-lg select-none hover:bg-blue-gray-900/10 active:bg-blue-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+              >
+                Upload Data
+              </Button>
+            </div>
           </div>
         </div>
       </div>
