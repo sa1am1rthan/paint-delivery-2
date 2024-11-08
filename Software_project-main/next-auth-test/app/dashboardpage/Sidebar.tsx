@@ -69,14 +69,14 @@ const Sidebar: React.FC<SidebarProps> = ({ handleLogout, handleAddCsvClick, role
         </Typography>
       </div>
       <List>
-      {(((role && role.role) !== 'driver') || (state !== 'driver')) && 
+      {/* {(((role && role.role) !== 'driver') || (state !== 'driver')) && 
         (<ListItem onClick={handleAddCsvClick}>
             <ListItemPrefix>
               <DocumentPlusIcon className="h-5 w-5" />
             </ListItemPrefix>
             Upload CSV
           </ListItem>
-        )}
+        )} */}
         {/* <ListItem onClick={handleHistoryClick}>
           <ListItemPrefix>
             <ClockIcon className="h-5 w-5" />

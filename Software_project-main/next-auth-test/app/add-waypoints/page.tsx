@@ -23,6 +23,13 @@ const AddWaypoints: React.FC = () => {
   const [marker, setMarker] = useState<google.maps.LatLngLiteral | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [searchBox, setSearchBox] = useState<google.maps.places.Autocomplete | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    city: '',
+    orderNumber: '',
+    contactNumber: '',
+  });
 
   if (!isLoaded) return <div>Loading...</div>;
 
@@ -47,6 +54,56 @@ const AddWaypoints: React.FC = () => {
     console.log('Marker removed');
   };
 
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleUploadMarker = async () => {
+    if (!marker) return;
+    
+    try {
+      const response = await fetch('/api/upload-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          address: formData.address,
+          city: formData.city,
+          orderNumber: formData.orderNumber,
+          contactNumber: formData.contactNumber,
+          latitude: marker.lat,
+          longitude: marker.lng,
+          deliveryStatus: 'pending',
+          approval: 'no'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload data');
+      }
+
+      const data = await response.json();
+      console.log('Data uploaded successfully:', data);
+      // Clear form and marker after successful upload
+      setMarker(null);
+      setFormData({
+        name: '',
+        address: '',
+        city: '',
+        orderNumber: '',
+        contactNumber: '',
+      });
+    } catch (error) {
+      console.error('Error uploading data:', error);
+    }
+  };
+
   const onPlaceSelected = () => {
     if (searchBox) {
       const place = searchBox.getPlace();
@@ -65,45 +122,131 @@ const AddWaypoints: React.FC = () => {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex gap-4">
-        <div className="flex-grow">
-          <Autocomplete
-            onLoad={setSearchBox}
-            onPlaceChanged={onPlaceSelected}
-          >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Customer Details Form */}
+        <div className="space-y-4 bg-white p-4 rounded-lg shadow">
+          <h2 className="text-xl font-bold mb-4">Customer Details</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Name
+            </label>
             <input
               type="text"
-              placeholder="Search for a location..."
+              name="name"
+              value={formData.name}
+              onChange={handleFormChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
-          </Autocomplete>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleFormChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              City
+            </label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleFormChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Order Number
+            </label>
+            <input
+              type="text"
+              name="orderNumber"
+              value={formData.orderNumber}
+              onChange={handleFormChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contact Number
+            </label>
+            <input
+              type="tel"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleFormChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
         </div>
-        <button
-          onClick={handleRemoveMarker}
-          disabled={!marker}
-          className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
-            marker 
-              ? 'bg-red-500 hover:bg-red-700 text-white cursor-pointer'
-              : 'bg-red-200 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          Remove Marker
-        </button>
+
+        {/* Map Section */}
+        <div className="space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-grow">
+              <Autocomplete
+                onLoad={setSearchBox}
+                onPlaceChanged={onPlaceSelected}
+              >
+                <input
+                  type="text"
+                  placeholder="Search for a location..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </Autocomplete>
+            </div>
+            <button
+              onClick={handleUploadMarker}
+              disabled={!marker || !formData.name || !formData.address || !formData.city || !formData.orderNumber || !formData.contactNumber}
+              className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
+                marker && formData.name && formData.address && formData.city && formData.orderNumber && formData.contactNumber
+                  ? 'bg-green-500 hover:bg-green-700 text-white cursor-pointer'
+                  : 'bg-green-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Upload Data
+            </button>
+            <button
+              onClick={handleRemoveMarker}
+              disabled={!marker}
+              className={`font-bold py-2 px-4 rounded transition-colors duration-200 ${
+                marker 
+                  ? 'bg-red-500 hover:bg-red-700 text-white cursor-pointer'
+                  : 'bg-red-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Remove Marker
+            </button>
+          </div>
+          <GoogleMap
+            center={center}
+            zoom={12}
+            mapContainerStyle={mapContainerStyle}
+            options={{
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+            }}
+            onClick={handleMapClick}
+            onLoad={setMap}
+          >
+            {marker && <Marker position={marker} />}
+          </GoogleMap>
+        </div>
       </div>
-      <GoogleMap
-        center={center}
-        zoom={12}
-        mapContainerStyle={mapContainerStyle}
-        options={{
-          streetViewControl: false,
-          mapTypeControl: false,
-          fullscreenControl: false,
-        }}
-        onClick={handleMapClick}
-        onLoad={setMap}
-      >
-        {marker && <Marker position={marker} />}
-      </GoogleMap>
     </div>
   );
 };

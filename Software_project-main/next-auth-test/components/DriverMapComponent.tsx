@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import {
@@ -11,29 +11,45 @@ import * as XLSX from "xlsx";
 import { IconButton, Drawer, Button } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Sidebar from '../app/dashboardpage/Sidebar';
-import { Table } from 'antd';
+import { Table, Select } from 'antd';
 import LoggedHeader from "../app/LoggedHeader";
 import Footer from "../app/Footer";
 import { useRouter } from 'next/navigation';
+
+// console.log('mappg/page.tsx loaded');
 
 const center = {
   lat: 6.9271,
   lng: 79.8612,
 };
 
+// Set constant origin and destination address
 const ORIGIN_DESTINATION_ADDRESS = "357 Negombo - Colombo Main Rd, Negombo 11500";
+const state = "admin";
 
-// Use the same loader options
+interface RouteData {
+  deliveryDate: string;
+  location: string;
+}
+
+interface DeliveryData {
+  name: string;
+  address: string;
+  city: string;
+  orderNumber: string;
+  contactNumber: string;
+  latitude: number;
+  longitude: number;
+  deliveryStatus: string;
+}
+
+// Define the loader options outside of the component
 const loaderOptions = {
   googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   libraries: ["places", "maps"],
 };
 
-
-
-const DriverMapComponent: React.FC = (role) => {
-  const router = useRouter();
-  const state = "driver";
+const MapComponent: React.FC = (role, state) => {
   console.log("MapComponent rendered");
   const { isLoaded } = useJsApiLoader(loaderOptions);
 
@@ -43,11 +59,13 @@ const DriverMapComponent: React.FC = (role) => {
   const [optimizedRouteData, setOptimizedRouteData] = useState<any[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapSize, setMapSize] = useState({ width: "1200px", height: "500px" });
   const [fileId, setFileId] = useState<string | null>(null);
   const [csvWaypoints, setCsvWaypoints] = useState<string[]>([]);
+  const [pendingDeliveries, setPendingDeliveries] = useState<DeliveryData[]>([]);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => setIsDrawerOpen(false);
@@ -98,6 +116,39 @@ const DriverMapComponent: React.FC = (role) => {
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchPendingDeliveries = async () => {
+      try {
+        const response = await fetch('/api/get-all-data');
+        if (!response.ok) {
+          throw new Error('Failed to fetch pending deliveries');
+        }
+        const result = await response.json();
+        
+        if (Array.isArray(result.data)) {
+          // Filter out delivered items
+          const pendingOnly = result.data.filter(
+            (delivery: DeliveryData) => delivery.deliveryStatus !== 'delivered' && delivery.approval !== 'approved'
+          );
+          setPendingDeliveries(pendingOnly);
+          
+          // Call getOptimizedRoute with pending deliveries only
+          if (pendingOnly.length > 0) {
+            getOptimizedRoute(pendingOnly);
+          }
+        } else {
+          console.error('Data is not an array:', result);
+          setPendingDeliveries([]);
+        }
+      } catch (error) {
+        console.error('Error fetching pending deliveries:', error);
+        setPendingDeliveries([]);
+      }
+    };
+
+    fetchPendingDeliveries();
   }, []);
 
   const fetchFileFromDatabase = async (id: string) => {
@@ -210,90 +261,109 @@ const DriverMapComponent: React.FC = (role) => {
     reader.readAsArrayBuffer(file);
   };
 
-  const getOptimizedRoute = async (waypointArray: string[]) => {
-    console.log("Getting optimized route for waypoints:", waypointArray);
-    const departureTime = Math.floor(Date.now() / 1000);
-    const directionsResponse = await fetch("/api/get-directions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ waypoints: waypointArray, departureTime }),
-    });
+  const getOptimizedRoute = async (deliveries: DeliveryData[]) => {
+    console.log("Getting optimized route for pending deliveries:", deliveries);
+    
+    // Filter out any delivered items
+    const pendingDeliveries = deliveries.filter(
+      delivery => delivery.deliveryStatus !== 'delivered'
+    );
+    
+    // Create LatLng locations array for pending deliveries only
+    const locations = pendingDeliveries.map(delivery => ({
+      lat: delivery.latitude,
+      lng: delivery.longitude,
+      name: delivery.name,
+      orderNumber: delivery.orderNumber,
+      address: delivery.address,
+      city: delivery.city,
+      deliveryStatus: delivery.deliveryStatus
+    }));
 
-    const distanceMatrixData = await directionsResponse.json();
+    // Add origin/destination location
+    const geocoder = new google.maps.Geocoder();
+    try {
+      const originResult = await new Promise((resolve, reject) => {
+        geocoder.geocode({ address: ORIGIN_DESTINATION_ADDRESS }, (results, status) => {
+          if (status === google.maps.GeocoderStatus.OK && results) {
+            resolve(results[0].geometry.location);
+          } else {
+            reject(status);
+          }
+        });
+      });
 
-    const tspRoute = [0];
-    const visited = new Array(waypointArray.length).fill(false);
-    visited[0] = true;
+      const originLocation = {
+        lat: (originResult as google.maps.LatLng).lat(),
+        lng: (originResult as google.maps.LatLng).lng(),
+        name: 'Warehouse',
+        orderNumber: 'N/A',
+        address: ORIGIN_DESTINATION_ADDRESS,
+        city: 'Negombo'
+      };
 
-    for (let i = 0; i < waypointArray.length - 1; i++) {
-      let last = tspRoute[tspRoute.length - 1];
-      let nearest = -1;
-      let nearestTime = Number.MAX_VALUE;
+      // Add origin to start and end of locations array
+      const allLocations = [originLocation, ...locations];
 
-      distanceMatrixData.rows[last].elements.forEach(
-        (element: any, index: number) => {
-          if (!visited[index] && element.duration_in_traffic.value < nearestTime) {
-            nearest = index;
-            nearestTime = element.duration_in_traffic.value;
+      // Get distance matrix using coordinates
+      const directionsService = new google.maps.DirectionsService();
+      const waypoints = locations.map(location => ({
+        location: new google.maps.LatLng(location.lat, location.lng),
+        stopover: true
+      }));
+
+      directionsService.route(
+        {
+          origin: new google.maps.LatLng(originLocation.lat, originLocation.lng),
+          destination: new google.maps.LatLng(originLocation.lat, originLocation.lng),
+          waypoints: waypoints,
+          optimizeWaypoints: true,
+          travelMode: google.maps.TravelMode.DRIVING,
+          drivingOptions: {
+            departureTime: new Date(),
+            trafficModel: google.maps.TrafficModel.BEST_GUESS,
+          },
+        },
+        (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            setDirections(result);
+            
+            // Get the optimized waypoint order
+            const waypointOrder = result.routes[0].waypoint_order;
+            
+            // Create optimized route data using the waypoint order
+            const optimizedData = result.routes[0].legs.map((leg, index) => {
+              const currentDelivery = index < waypointOrder.length ? 
+                locations[waypointOrder[index]] : 
+                originLocation;
+              
+              const previousDelivery = index === 0 ? 
+                originLocation : 
+                locations[waypointOrder[index - 1]];
+
+              return {
+                key: index,
+                orderNumber: currentDelivery.orderNumber,
+                customerName: currentDelivery.name,
+                start: `${previousDelivery.address}, ${previousDelivery.city}`,
+                end: `${currentDelivery.address}, ${currentDelivery.city}`,
+                distance: leg.distance?.text || 'N/A',
+                duration: leg.duration?.text || 'N/A',
+                deliveryStatus: currentDelivery.deliveryStatus
+              };
+            });
+
+            setOptimizedRouteData(optimizedData);
+            setMarkers(allLocations);
+          } else {
+            console.error(`Error fetching directions: ${status}`, result);
           }
         }
       );
 
-      tspRoute.push(nearest);
-      visited[nearest] = true;
+    } catch (error) {
+      console.error('Error in route optimization:', error);
     }
-
-    const optimizedRoute = tspRoute.map((index) => waypointArray[index]);
-
-    const validRoute = [ORIGIN_DESTINATION_ADDRESS, ...optimizedRoute, ORIGIN_DESTINATION_ADDRESS];
-
-    const directionsService = new google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: ORIGIN_DESTINATION_ADDRESS,
-        destination: ORIGIN_DESTINATION_ADDRESS,
-        waypoints: validRoute.slice(1, -1).map((location) => ({
-          location,
-          stopover: true,
-        })),
-        travelMode: google.maps.TravelMode.DRIVING,
-        drivingOptions: {
-          departureTime: new Date(),
-          trafficModel: google.maps.TrafficModel.BEST_GUESS,
-        },
-      },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result) {
-          setDirections(result);
-          setOptimizedRouteData(
-            result.routes[0].legs.map((leg, index) => ({
-              key: index,
-              start: leg.start_address,
-              end: leg.end_address,
-              distance: leg.distance?.text,
-              duration: leg.duration?.text,
-            }))
-          );
-        } else {
-          console.error(`Error fetching directions: ${status}`, result);
-        }
-      }
-    );
-
-    // Set markers based on optimized route
-    const geocoder = new google.maps.Geocoder();
-    validRoute.forEach((address) => {
-      geocoder.geocode({ address }, (results, status) => {
-        if (status === google.maps.GeocoderStatus.OK && results) {
-          const location = results[0].geometry.location;
-          setMarkers((prevMarkers) => [...prevMarkers, { lat: location.lat(), lng: location.lng() }]);
-        } else {
-          console.error(`Geocoding error: ${status}`);
-        }
-      });
-    });
   };
 
   const handleLogout = async () => {
@@ -302,7 +372,7 @@ const DriverMapComponent: React.FC = (role) => {
   };
 
   const handleHomeClick = () => {
-    router.push('/admin');
+    router.push('/driver-map');
   };
 
   const handleAddCsvClick = () => {
@@ -318,29 +388,102 @@ const DriverMapComponent: React.FC = (role) => {
     }
   };
 
+  // Add function to handle status change
+  const handleStatusChange = async (value: string, record: any) => {
+    try {
+      const response = await fetch('/api/update-delivery-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderNumber: record.orderNumber,
+          deliveryStatus: value
+        }),
+      });
+
+      if (response.ok) {
+        // Update pendingDeliveries state
+        setPendingDeliveries(prevDeliveries =>
+          prevDeliveries.filter(delivery => 
+            delivery.orderNumber !== record.orderNumber
+          )
+        );
+
+        // Update optimizedRouteData state but keep the record
+        setOptimizedRouteData(prevData =>
+          prevData.map(item =>
+            item.orderNumber === record.orderNumber
+              ? { ...item, deliveryStatus: value }
+              : item
+          )
+        );
+
+        // If status is changed to 'delivered', update the route but keep the markers
+        if (value === 'delivered') {
+          const updatedPendingDeliveries = pendingDeliveries.filter(
+            delivery => delivery.orderNumber !== record.orderNumber
+          );
+          // Don't call getOptimizedRoute here to keep the route visible
+        }
+      } else {
+        console.error('Failed to update delivery status');
+      }
+    } catch (error) {
+      console.error('Error updating delivery status:', error);
+    }
+  };
+
   if (!isLoaded) return <div>Loading...</div>;
 
+  // Define columns for the pending deliveries table
   const columns = [
     {
-      title: 'Delivery Date',
-      dataIndex: 'deliveryDate',
-      key: 'deliveryDate',
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
-      title: 'Location',
-      dataIndex: 'location',
-      key: 'location',
+      title: 'Address',
+      dataIndex: 'address',
+      key: 'address',
+    },
+    {
+      title: 'City',
+      dataIndex: 'city',
+      key: 'city',
+    },
+    {
+      title: 'Order Number',
+      dataIndex: 'orderNumber',
+      key: 'orderNumber',
+    },
+    {
+      title: 'Contact Number',
+      dataIndex: 'contactNumber',
+      key: 'contactNumber',
     },
   ];
 
+  // Define columns for the optimized route table
   const optimizedRouteColumns = [
     {
-      title: 'Start',
+      title: 'Order Number',
+      dataIndex: 'orderNumber',
+      key: 'orderNumber',
+    },
+    {
+      title: 'Customer Name',
+      dataIndex: 'customerName',
+      key: 'customerName',
+    },
+    {
+      title: 'Start Location',
       dataIndex: 'start',
       key: 'start',
     },
     {
-      title: 'End',
+      title: 'End Location',
       dataIndex: 'end',
       key: 'end',
     },
@@ -353,6 +496,22 @@ const DriverMapComponent: React.FC = (role) => {
       title: 'Duration',
       dataIndex: 'duration',
       key: 'duration',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'deliveryStatus',
+      key: 'deliveryStatus',
+      render: (status: string, record: DeliveryData) => (
+        <Select
+          value={status}
+          style={{ width: 120 }}
+          onChange={(value) => handleStatusChange(value, record)}
+          options={[
+            { value: 'pending', label: 'Pending' },
+            { value: 'delivered', label: 'Delivered' },
+          ]}
+        />
+      ),
     },
   ];
 
@@ -405,10 +564,17 @@ const DriverMapComponent: React.FC = (role) => {
             </GoogleMap>
           </div>
           <div>
-            <h2> </h2>
-            <Table dataSource={tableData} columns={columns} />
-            <h2>Optimized Route</h2>
-            <Table dataSource={optimizedRouteData} columns={optimizedRouteColumns} />
+            <h2 className="text-xl font-bold my-4">Pending Deliveries</h2>
+            <Table 
+              dataSource={Array.isArray(pendingDeliveries) ? pendingDeliveries : []} 
+              columns={columns} 
+              rowKey="orderNumber"
+            />
+            <h2 className="text-xl font-bold my-4">Optimized Route</h2>
+            <Table 
+              dataSource={Array.isArray(optimizedRouteData) ? optimizedRouteData : []} 
+              columns={optimizedRouteColumns} 
+            />
           </div>
           {/* {csvWaypoints.length > 0 && (
             <div>
@@ -427,4 +593,4 @@ const DriverMapComponent: React.FC = (role) => {
   );
 };
 
-export default DriverMapComponent;
+export default MapComponent;
